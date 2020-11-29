@@ -1,0 +1,52 @@
+version: "3.8"
+
+services:
+
+  web:
+    build: ./backend
+    hostname: adonis-auth-server-web
+    container_name: adonis-auth-server-web
+    volumes:
+      - type: bind
+        source: ./backend
+        target: /usr/src/app
+    ports:
+      -  "8080:8080"
+    networks:
+      - adonis
+  
+  adonis-web:
+    image: mwpb/adonis-auth-server:0.0.6
+    hostname: adonis-auth-server
+    container_name: adonis-auth-server
+    env_file:
+      - adonis-auth-server.env
+    depends_on:
+      - adonis-mysql
+    ports:
+      -  "3333:3333"
+    networks:
+      - adonis
+
+  adonis-mysql:
+    image: mysql:5.7
+    container_name: adonis-auth-server-mysql
+    hostname: adonis-auth-server-mysql
+    command: --init-file /data/sql/init.sql
+    volumes:
+      - type: bind
+        source: ./sql/data
+        target: /var/lib/mysql
+      - type: bind
+        source: ./sql/init
+        target: /data/sql/
+      - type: bind
+        source: ./sql/conf/
+        target: /etc/mysql/mysql.conf.d/
+    env_file:
+      - adonis-mysql.env
+    networks:
+      - adonis
+
+networks:
+  adonis:
